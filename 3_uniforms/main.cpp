@@ -11,7 +11,7 @@ const ui32 SCR_HEIGHT = 720;
 const f32  ASPECT = (f32)SCR_WIDTH / (f32)SCR_HEIGHT;
 
 //valores para la camara
-glm::vec3 position = glm::vec3(0.0f, 2.0f, 10.0f);
+glm::vec3 position = glm::vec3(0.0f, 1.5f, 10.0f);
 glm::vec3 front = glm::vec3(0.0f, 1.0f, -1.0f);
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -101,11 +101,9 @@ public:
 	ui32 getIsize() {
 		return 6 * 6;
 	}
-	
 };
 
 //procesar teclas
-
 void processInput(GLFWwindow* window) {
 
 
@@ -235,7 +233,7 @@ i32 main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * FSIZE, (void*)(6 * FSIZE));
 	glEnableVertexAttribArray(2);
 
-
+	//CARGANDO TEXTURAS
 	ui32 texture0 = shader->loadTexture("arena.jpg");
 	ui32 texture1 = shader->loadTexture("agua.jpg");
 	ui32 texture2 = shader->loadTexture("pasto.jpg");
@@ -244,7 +242,6 @@ i32 main() {
 	shader->setI32("texture0", 0);
 
 	glEnable(GL_DEPTH_TEST);
-	
 	
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -255,12 +252,13 @@ i32 main() {
 		glClearColor(0.98f, 0.45f, 0.0f, 0.5f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//ACTIVANDO TEXTURA
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
 		
 		shader->useProgram();
 		
-
+		//MATRICES PARA LA CAMARA
 		glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT, 0.1f, 100.0f);
 		shader->setMat4("proj", projection);
 
@@ -270,7 +268,7 @@ i32 main() {
 
 		glBindVertexArray(vao);
 
-		//USO DE Texturas
+		//USO DE TEXTURAS PARA LA PLAYA 
 		for (ui32 i = 0; i < positions.size()/2; ++i) {
 			if (randomNumbers[i] == 1) {
 				glActiveTexture(GL_TEXTURE0);
@@ -286,7 +284,7 @@ i32 main() {
 				glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
 		}
 
-		//USO DE SEGUNDA TEXTURA 
+		//USO DE SEGUNDA TEXTURA PARA EL MAR
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
