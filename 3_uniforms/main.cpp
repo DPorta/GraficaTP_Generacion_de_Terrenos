@@ -7,8 +7,8 @@
 
 const ui32 FSIZE = sizeof(f32);
 const ui32 ISIZE = sizeof(i32);
-const ui32 SCR_WIDTH = 1280;
-const ui32 SCR_HEIGHT = 720;
+const ui32 SCR_WIDTH = 1920;
+const ui32 SCR_HEIGHT = 1080;
 const f32  ASPECT = (f32)SCR_WIDTH / (f32)SCR_HEIGHT;
 
 //valores para la camara
