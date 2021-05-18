@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "Cube.h"
 
 const ui32 FSIZE = sizeof(f32);
 const ui32 ISIZE = sizeof(i32);
@@ -11,8 +12,8 @@ const ui32 SCR_HEIGHT = 720;
 const f32  ASPECT = (f32)SCR_WIDTH / (f32)SCR_HEIGHT;
 
 //valores para la camara
-glm::vec3 position = glm::vec3(0.0f, 1.5f, 10.0f);
-glm::vec3 front = glm::vec3(0.0f, 1.0f, -1.0f);
+glm::vec3 position = glm::vec3(25.0f, 10.0f, 50.0f);
+glm::vec3 front = glm::vec3(25.0f, -10.0f, 0.0f);
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //para el mouse
@@ -29,79 +30,14 @@ f32 fov = 45.0f;
 f32 deltaTime = 0.0f;
 f32 lastFrame = 0.0f;
 
-class Cube {
-	f32 width;
-	f32 height;
-	f32 depth;
-
-	f32* vertices;
-	ui32* indices;
-public:
-	Cube(f32 width = 1.0f, f32 height = 1.0f, f32 depth = 1.0f)
-		:width(width), height(height), depth(depth),
-		vertices(new f32[16*8]), indices(new ui32[6*6]) {
-
-		f32 wm = width / 2.0f;
-		f32 hm = width / 2.0f;
-		f32 dm = width / 2.0f;
-
-		//temporal de vertices
-		f32 temp[]= {
-			//vertices(posiciones)  //colores         //coord. textura
-			//cara de los lados
-			-wm,  hm,  dm,    0.5f,0.5f,0.5f,     0.0f,1.0f,
-			 wm,  hm,  dm,    0.5f,0.5f,0.5f,     1.0f,1.0f,
-			-wm, -hm,  dm,    0.5f,0.5f,0.5f,     0.0f,0.0f,
-			 wm, -hm,  dm,    0.5f,0.5f,0.5f,     1.0f,0.0f,
-			-wm,  hm, -dm,    0.5f,0.5f,0.5f,     1.0f,1.0f,
-			 wm,  hm, -dm,    0.5f,0.5f,0.5f,     0.0f,1.0f,
-			-wm, -hm, -dm,    0.5f,0.5f,0.5f,     1.0f,0.0f,
-			 wm, -hm, -dm,    0.5f,0.5f,0.5f,     0.0f,0.0f,
-			//cara de arriba
-		   -wm,  hm,  dm,     1.0f, 1.0f, 1.0f,    0.0f, 0.0f,
-			wm,  hm,  dm,     1.0f, 1.0f, 1.0f,    1.0f, 0.0f,
-		   -wm, -hm,  dm,     1.0f, 1.0f, 1.0f,    0.0f, 0.0f,
-			wm, -hm,  dm,     1.0f, 1.0f, 1.0f,    1.0f, 0.0f,
-		   -wm,  hm, -dm,     1.0f, 1.0f, 1.0f,    0.0f, 1.0f,
-			wm,  hm, -dm,     1.0f, 1.0f, 1.0f,    1.0f, 1.0f,
-		   -wm, -hm, -dm,     1.0f, 1.0f, 1.0f,    0.0f, 1.0f,
-			wm, -hm, -dm,     1.0f, 1.0f, 1.0f,    1.0f, 1.0f };
-
-		for (ui32 i = 0; i < 16*8; ++i)
-		{
-			vertices[i] = temp[i];
-		}
-		//temporal de indices
-		ui32 temp2[] = { 
-			0,  1,  2,		1,2,3,
-			8,  9,  12,		9,12,13,
-			1,  5,  3,		3,5,7,
-			11, 14, 15,	    10,11,14,
-			0,  4,  6,		0,2,6,
-			4,  5,  6,		5,6,7 };
-
-		for (ui32 i = 0; i < 6 * 6; ++i)
-		{
-			indices[i] = temp2[i];
-		}
-	}
-	~Cube() {
-		delete[] vertices;
-		delete[] indices;
-	}
-	f32* getVertices() {
-		return vertices;
-	}
-	ui32* getIndices() {
-		return indices;
-	}
-	f32 getVsize() {
-		return 16 * 8;
-	}
-	ui32 getIsize() {
-		return 6 * 6;
-	}
-};
+//PERLIN NOISE TERRENO
+ui32 y_level = 7;
+const ui32 x_max{ 50 };
+const ui32 z_max{ 50 };
+double gradient[x_max][z_max][3];
+#include "PerlinNoiseTerrain.h"
+double terreno[x_max][z_max];
+std::vector<glm::vec4> transition;
 
 //procesar teclas
 void processInput(GLFWwindow* window) {
@@ -146,11 +82,11 @@ void mouseCallBack(GLFWwindow*window, f64 xpos, f64 ypos) {
 	yaw += xoffset;
 	pitch += yoffset;
 
-	if (pitch > 1.0f) {
-		pitch = 1.0f;
+	if (pitch > 89.0f) {
+		pitch = 89.0f;
 	}
-	else if (pitch <-1.0f) {
-		pitch = -1.0f;
+	else if (pitch <-89.0f) {
+		pitch = -89.0f;
 	}
 	glm::vec3 f;
 	f.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -173,40 +109,18 @@ void scrollCallBack(GLFWwindow* , f64 xoffset, f64 yoffset) {
 
 
 i32 main() {
-	GLFWwindow* window = glutilInit(3, 3, SCR_WIDTH, SCR_HEIGHT, "Terreno");
+
+	GLFWwindow* window = glutilInit(3, 3, SCR_WIDTH, SCR_HEIGHT, "Terreno: Campo");
 	Shader* shader = new Shader();
-	Shader* shader2 = new Shader();
+	Cube* cubex = new Cube();
+	MyTerrain* miTerreno = new MyTerrain();
+
+	miTerreno->genTerrain<x_max, z_max>(terreno);
+	miTerreno->genTerrainTransitions<x_max, z_max>(terreno, transition, y_level);
+
 	glfwSetCursorPosCallback(window, mouseCallBack);
 	glfwSetScrollCallback(window, scrollCallBack);
-
-	Cube* cubex = new Cube();
-	
-	//FALTA: CREAR FUNCION PARA GENERAR DESNIVELES
-	srand(time(0));
-	auto rndb = [](f32 a, f32 b) {
-		return (rand() % 100) / 100.0f ;
-	};
-	
-	//CREANDO POSICIONES: REMPLAZAR "Y" POR EL LAMBDA DE ARRIBA PARA EL DESNIVEL
-	ui32 n = 50;
-	std::vector<glm::vec3> positions(n*n);
-	for (ui32 i = 0; i < n; ++i) {
-		for (ui32 j = 0; j < n; ++j) {
-			f32 x = i - n / 2.0f;
-			f32 z = j - n / 2.0f;
-			f32 y = rndb(x*0.01,z*0.01)/2.0f;
-			positions[i * n + j] = glm::vec3(x, y, z);
-		}
-	}
-	//random para crear textura que no sea el mar
-	std::vector<int>randomNumbers(positions.size());
-	auto getrandom = []() {
-		return rand() % 3 + 1;
-	};
-	for (int i = 0; i < positions.size(); ++i) {
-		randomNumbers[i] = getrandom();
-	}
-	
+		
 	//VBO, VAO, EBO
 	ui32 vbo, vao, ebo;
 	glGenVertexArrays(1, &vao);
@@ -214,13 +128,9 @@ i32 main() {
 	glGenBuffers(1, &ebo);
 
 	glBindVertexArray(vao);
-
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	
 	glBufferData(GL_ARRAY_BUFFER, cubex->getVsize()*FSIZE, cubex->getVertices(), GL_STATIC_DRAW);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubex->getIsize()*ISIZE, cubex->getIndices(), GL_STATIC_DRAW);
 
 	// posiciones
@@ -268,37 +178,30 @@ i32 main() {
 
 		glBindVertexArray(vao);
 
-		//USO DE TEXTURAS PARA LA PLAYA 
-		for (ui32 i = 0; i < positions.size()/2; ++i) {
-			if (randomNumbers[i] == 1) {
+		//imprimir terreno dependiendo del nivel
+		for (auto vec : transition)
+		{
+			if (vec.y <= 0.3) {
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, texture0);
+				glBindTexture(GL_TEXTURE_2D, texture1);
 			}
-			else {
+			else if (vec.y > 0.5){
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, texture2);
 			}
-				glm::mat4 model = glm::mat4(1.0f);
-				model = glm::translate(model, positions[i]);
-				shader->setMat4("model", model);
-				glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
+			else {
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texture0);
+			}
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(vec.x, vec.y, vec.z) * glm::vec3(2.0f, 2.0f, 2.0f));
+			shader->setMat4("model", model);
+			glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
 		}
-
-		//USO DE SEGUNDA TEXTURA PARA EL MAR
-		
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-
-		for (ui32 i = (positions.size() / 2) + 1; i < positions.size(); ++i) {
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, positions[i]);
-		shader->setMat4("model", model);
-		glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
-		}
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
