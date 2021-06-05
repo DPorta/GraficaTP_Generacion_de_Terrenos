@@ -5,16 +5,16 @@ in vec3 fragColor;
 in vec3 fragPos;
 in vec2 texCoord;
 
-uniform vec3 xyz;      // light position
-uniform vec3 xyzColor; // light color
-uniform vec3 xyzView;  // camera position
+uniform vec3 xyz;           // light position
+uniform vec3 xyzColor;      // light color
+uniform vec3 xyzView;       // camera position
 uniform sampler2D texture0; // textura
 
 out vec4 color;
 
 void main() {
     // ambient
-    float strength = 0.15;
+    float strength = 0.10;
     vec3 ambient   = strength * xyzColor;
 
     // diffuse

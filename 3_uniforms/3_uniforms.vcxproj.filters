@@ -18,10 +18,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
-    <ClCompile Include="C:\glfw-3.3.4\include\glad.c">
+    <ClCompile Include="C:\glfw-3.3.3\include\glad.c">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
-    <ClCompile Include="C:\glfw-3.3.4\include\stb_image.c">
+    <ClCompile Include="C:\glfw-3.3.3\include\stb_image.c">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
   </ItemGroup>

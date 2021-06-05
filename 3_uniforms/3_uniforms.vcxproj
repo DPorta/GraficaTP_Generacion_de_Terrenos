@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\glfw-3.3.4\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\glfw-3.3.4\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\glfw-3.3.3\include;C:\glfw-3.3.4\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\glfw-3.3.3\libs;C:\glfw-3.3.4\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -142,8 +142,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="C:\glfw-3.3.4\include\glad.c" />
-    <ClCompile Include="C:\glfw-3.3.4\include\stb_image.c" />
+    <ClCompile Include="C:\glfw-3.3.3\include\glad.c" />
+    <ClCompile Include="C:\glfw-3.3.3\include\stb_image.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
