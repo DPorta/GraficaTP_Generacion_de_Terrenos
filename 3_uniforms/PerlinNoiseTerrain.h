@@ -83,7 +83,7 @@ public:
 
     //aplica funcion de transicion para el suavizado del terreno
     template <uint rows, uint columns>
-    void genTerrainTransitions(double(&terreno)[rows][columns], std::vector<glm::vec4>& transition, ui32 y_level) {
+    void genTerrainTransitions(double(&terreno)[rows][columns], std::vector<glm::vec4>& transition, u32 y_level) {
         for (auto i = 0u; i < rows; ++i) {
             for (auto j = 0u; j < columns; ++j) {
                 terreno[i][j] *= y_level;

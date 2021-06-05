@@ -24,7 +24,7 @@ public:
 		f32 yaw = -90.0f, f32 pitch = 0.0f, f32 zoom = 45.0f)
 		: pos({ px, py, pz }), lookat({ fx, fy, fz }), up({ ux, uy, uz }),
 		worldUp({ ux, uy, uz }), yaw(yaw), pitch(pitch), zoom(zoom),
-		mouseSensitivity(0.1f), speed(2.5f) {
+		mouseSensitivity(0.1f), speed(10.5f) {
 		updateVectors();
 	}
 
