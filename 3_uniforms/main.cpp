@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "Cube.h"
+#include "Files.h"
+#include "Model.h"
 #include "Camera.h"
 
 const u32 FSIZE = sizeof(f32);
@@ -12,8 +14,6 @@ const u32 SCR_WIDTH = 1080;
 const u32 SCR_HEIGHT = 720;
 const f32  ASPECT = (f32)SCR_WIDTH / (f32)SCR_HEIGHT;
 
-glm::vec3 lightPos(25.0f, 20.0f, 50.0f);
-glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 //PERLIN NOISE TERRENO
 u32 y_level = 7;
@@ -30,6 +30,7 @@ f32  lasty;
 bool firstMouse = true;
 f32  deltaTime = 0.0f;
 f32  lastFrame = 0.0f;
+bool wireframe = false;
 
 //keyboard input processing
 
@@ -68,6 +69,10 @@ void mouse_callback(GLFWwindow* window, f64 xpos, f64 ypos) {
 	}
 }
 
+void key_callback(GLFWwindow*, int key, int, int act, int) {
+	wireframe ^= key == GLFW_KEY_E && act == GLFW_PRESS;
+}
+
 void scroll_callback(GLFWwindow* window, f64 xoffset, f64 yoffset) {
 	cam->processScroll((f32)yoffset);
 }
@@ -78,11 +83,23 @@ i32 main() {
 
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	Shader* shader = new Shader();
-	Shader* lightingShader = new Shader("bin", "resources/textures",
-		"shader2.vert", "shader2.frag");
 
+	//PATH de texturas y objetos
+	Files* files = new Files("bin", "resources/textures", "resources/objects");
+
+	//Ruta de shaders
+	Shader* shader = new Shader(files, "shader.vert", "shader.frag");
+	Shader* lightingShader = new Shader(files, "shader2.vert", "shader2.frag");
+	Shader* objShader = new Shader(files, "shader3.vert", "shader3.frag");
+
+	//Ruta de objetos
+	Model* creeper = new Model(files, "creeper/creeper.obj");
+
+	//TERRENO
 	MyTerrain* miTerreno = new MyTerrain();
+
+	glm::vec3 lightPos(25.0f, 20.0f, 50.0f);
+	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 	miTerreno->genTerrain<x_max, z_max>(terreno);
 	miTerreno->genTerrainTransitions<x_max, z_max>(terreno, transition, y_level);
@@ -118,11 +135,11 @@ i32 main() {
 	glEnableVertexAttribArray(3);
 
 	//CARGANDO TEXTURAS
-	u32 texture0 = shader->loadTexture("arena.jpg");
-	u32 texture1 = shader->loadTexture("agua.jpg");
-	u32 texture2 = shader->loadTexture("pasto.jpg");
+	u32 texture0 = TextureFromFile("resources/textures/arena.jpg");
+	u32 texture1 = TextureFromFile("resources/textures/agua.jpg");
+	u32 texture2 = TextureFromFile("resources/textures/pasto.jpg");
 
-	shader->useProgram();
+	shader->use();
 	shader->setI32("texture0", 0);
 	// luz
 	glBindVertexArray(lightCubeVao);
@@ -144,12 +161,13 @@ i32 main() {
 		processInput(window);
 		glClearColor(0.98f, 0.45f, 0.0f, 0.5f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
 
 		//ACTIVANDO TEXTURA
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
 
-		shader->useProgram();
+		shader->use();
 		//MATRICES PARA LA CAMARA
 		glm::mat4 projection = glm::perspective(cam->getZoom(), ASPECT, 0.1f, 100.0f);
 		shader->setMat4("proj", projection);
@@ -159,7 +177,7 @@ i32 main() {
 
 		glBindVertexArray(vao);
 
-		shader->useProgram();
+		shader->use();
 		shader->setVec3("xyz", lightPos);
 		shader->setVec3("xyzColor", lightColor);
 		shader->setVec3("xyzView", cam->getPos());
@@ -184,9 +202,9 @@ i32 main() {
 			shader->setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
 		}
-
+		//CUBO DE ILUMINACION
 		glBindVertexArray(lightCubeVao);
-		lightingShader->useProgram();
+		lightingShader->use();
 		lightingShader->setMat4("proj", projection);
 		lightingShader->setMat4("view", cam->getViewM4());
 
@@ -196,6 +214,24 @@ i32 main() {
 		lightingShader->setMat4("model", model);
 		glDrawElements(GL_TRIANGLES, cubex->getISize(), GL_UNSIGNED_INT, 0);
 
+		//CARGANDO LOS OBJETOS
+		objShader->use();
+		objShader->setVec3("xyz", lightPos);
+		objShader->setVec3("xyzColor", lightColor);
+		objShader->setVec3("xyzView", cam->getPos());
+		objShader->setMat4("proj", projection);
+		objShader->setMat4("view", cam->getViewM4());
+
+		model = glm::mat4(1.0f);
+		model = translate(model, glm::vec3(30.0f+sin(currentFrame)*2,5.0f,30.0f));
+		model = glm::rotate(model, currentFrame, glm::vec3(0.0f, 0.6f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f));
+		objShader->setMat4("model", model);
+		creeper->Draw(objShader);
+
+		/*model = translate(model, glm::vec3(su posicion));
+		objShader->setMat4("model", model);
+		creeper->Draw(objShader);*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -209,6 +245,7 @@ i32 main() {
 	delete shader;
 	delete cam;
 	delete cubex;
+	delete creeper;
 
 	return 0;
 }
