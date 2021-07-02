@@ -237,15 +237,15 @@ i32 main() {
 		//model = glm::rotate(model, 0.5f, glm::vec3(0.0f, 40.0f, 0.0f));
 		//objShader->setMat4("model", model);
 		model = translate(model, glm::vec3(20.0f + sin(currentFrame) * 2, 20.0f, 30.0f));
-		model = glm::rotate(model, currentFrame/6, glm::vec3(0.0f, (20.0f + sin(30) * 2), 0.0f));
+		model = glm::rotate(model, currentFrame/6, glm::vec3(0.0f, (20.0f + sin(currentFrame) * 2), 0.0f));
 		model = glm::scale(model, glm::vec3(2.0f));
 		objShader->setMat4("model", model);
 		airplane2->Draw(objShader);
 
 		//Implementando estatua
 		model = glm::mat4(1.0f);
-		model = translate(model, glm::vec3(25.0f, 6.0f, 30.0f));
-		model = glm::scale(model, glm::vec3(0.075f));
+		model = translate(model, glm::vec3(25.0f, 2.0f, 30.0f));
+		model = glm::scale(model, glm::vec3(0.1f));
 		objShader->setMat4("model", model);
 		estatua->Draw(objShader);
 		glfwSwapBuffers(window);
