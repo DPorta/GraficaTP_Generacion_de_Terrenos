@@ -95,6 +95,7 @@ i32 main() {
 	//Ruta de objetos
 	Model* creeper = new Model(files, "creeper/creeper.obj");
 	Model* airplane2 = new Model(files, "airplane2/piper_pa18.obj");
+	Model* estatua = new Model(files, "estatua/estatua.obj");
 
 	//TERRENO
 	MyTerrain* miTerreno = new MyTerrain();
@@ -241,6 +242,12 @@ i32 main() {
 		objShader->setMat4("model", model);
 		airplane2->Draw(objShader);
 
+		//Implementando estatua
+		model = glm::mat4(1.0f);
+		model = translate(model, glm::vec3(25.0f, 6.0f, 30.0f));
+		model = glm::scale(model, glm::vec3(0.075f));
+		objShader->setMat4("model", model);
+		estatua->Draw(objShader);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

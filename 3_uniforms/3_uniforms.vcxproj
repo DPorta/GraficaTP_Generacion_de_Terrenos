@@ -142,9 +142,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="C:\glfw-3.3.4\include\glad.c" />
-    <ClCompile Include="C:\glfw-3.3.4\include\stb_image.c" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stb_image.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
